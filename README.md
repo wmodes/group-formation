@@ -10,7 +10,7 @@ JavaScript tool to turn group survey spreadsheet data into effective groups base
 
 "The information needed to form teams may be obtained by having all students fill out the Getting to Know You form on the first day of class. This form provides information related to ability levels and times available to meet outside class" (ibid).
 
-In our case, we used a [Google Form](https://docs.google.com/forms/d/e/1FAIpQLSdaGdsfEyLQPZ91zLUhJIeO74d_eT-h8zdAjB82SVlZv7wEfQ/viewform) to gather information about student availability, research interests, and experience which was compiled in a [Google Sheet](https://docs.google.com/spreadsheets/d/1kDA-b332JVJx4G0ZJzhjEVE7EsX8utVH5lfgmQZjUJ4/edit?usp=sharing). This data was lightly digested in [another sheet](https://docs.google.com/spreadsheets/d/1kDA-b332JVJx4G0ZJzhjEVE7EsX8utVH5lfgmQZjUJ4/edit#gid=1315917977) where the data was summarized and field types were indicated.
+In our case, we used a [Google Form](https://docs.google.com/forms/d/e/1FAIpQLSdaGdsfEyLQPZ91zLUhJIeO74d_eT-h8zdAjB82SVlZv7wEfQ/viewform) to gather information about student availability, research interests, and experience which was compiled in a [Google Sheet](https://docs.google.com/spreadsheets/d/1kDA-b332JVJx4G0ZJzhjEVE7EsX8utVH5lfgmQZjUJ4/edit?usp=sharing). This data was lightly digested in [another sheet](https://docs.google.com/spreadsheets/d/1kDA-b332JVJx4G0ZJzhjEVE7EsX8utVH5lfgmQZjUJ4/edit#gid=1315917977) where the data was summarized and field types were indicated. Note that the header row is used only to present the results in a meaningful way.
 
 ## Criteria for team formation
 

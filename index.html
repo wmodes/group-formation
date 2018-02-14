@@ -1,0 +1,91 @@
+<html>
+<head>
+    <title>Group Formation Tool</title>
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="./group-formation.js"></script>
+</head>
+<body>
+<div id="wrapper">
+
+    <h1>Group Formation Tool</h1>
+    <p>JavaScript tool to turn group survey spreadsheet data into effective groups based on scheduling, preference, and expertise criteria.</p>
+
+    <h2>Options</h2>
+    <div>
+	<h3>Group size</h3>
+	<span class="col1"><label title="Ideal size of a group">
+	Ideal: 
+	<input id="input-group-ideal" name="group-ideal" type="number" size=6 
+	    value="4" min="0" max="100" required></label></span>
+	<span class="col2"><label title="Minimally acceptable size of a group">
+	Minimum: 
+	<input id="input-group-min" name="group-min" type="number" size=6 
+	    value="3" min="0" max="100" required></label></span>
+	<span class="col3"><label title="Maximum size of a group">
+	Maximum: 
+	<input id="input-group-max" name="group-max" type="number" size=6 
+	    value="5" min="0" max="100" required></label></span>
+
+	<h3>Weights</h3>
+	<span class="col1"><label 
+	title="Relative weight to apply to matching scheduling criteria">Scheduling:
+	<input id="input-weight-sched" name="weight-sched" type="number" size=6 
+	    value="5" min="0" max="100" required></label></span>
+	<span class="col2"><label 
+	title="Relative weight to apply to matching topics criteria">Topics:
+	<input id="input-weight-topic" name="weight-topic" type="number" size=6 
+	    value="3" min="0" max="100" required></label></span>
+	<span class="col3"><label 
+	title="Relative weight to apply to diversity fields criteria">Diversity:
+	<input id="input-weight-div" name="weight-div" type="number" size=6 
+	    value="2" min="0" max="100" required></label></span>
+	<span class="col4"><label 
+	title="Relative weight to apply to group sizing criteria">Group size:
+	<input id="input-weight-size" name="weight-size" type="number" size=6 
+	    value="5" min="0" max="100" required></label></span>
+
+
+
+    </div>
+
+    <h2>Participant Data</h2>
+    <div class="input-form">
+	<textarea id="participant-data" rows="30" rows="100%" 
+	    class="placeholder" required></textarea>
+    </div>
+    <div class="input-notes instructions">
+	<h3>Notes</h3>
+	<ol>
+	    <li>Each record is on a new line.</li>
+	    <li>Use tab separators as when cutting and pasting from Google Docs or Excel.</li>
+	    <li>The first line is a required header row.</li>
+	    <li>The second line is a required field type indicator, e.g., S, T, or D.</li>
+	    <li>Field types can be:
+		<ul>
+		<li>(S)cheduling fields are matched as closely as possible in groups. (Higher numbers indicate more available in a given time.)</li>
+		<li>(T)opic fields are matched as closely as possible with (typically) 
+		    less priority. (Higher numbers indicate particpant is more interested in topic.)</li>
+		<li>(D)iversity fields are distributed over groups, e.g. expertise, leadership. (Higher numbers indicate more expertise/skill.)</li>
+		</ul>
+	    </li>
+	    <li>Values may be any real numbers on any scale. Since they are normalized, many scale systems (even in different columns) will work, e.g., 0/1, 0-1, 1-10, 1-100, etc.
+	</ol>
+    </div>
+    <div class="section-divider"></div>
+
+    <br><input type="button" value="Create Groups" onclick="submit()">
+
+    <div id="notification">
+    </div>
+
+    <div class="output-form">
+        <h2>Group Data</h2>
+        <p>Group data returned from group formation algorithm in tab-separated values format. This should be possible to paste into Excel or Google docs. Note the header row which designates the fields.</p>
+        <textarea id=output-field></textarea>
+    </div>
+
+</div>
+</body>
+
+

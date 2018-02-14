@@ -1,0 +1,119 @@
+
+/* layout */
+
+#wrapper {
+    min-width: 600px;
+    width: 100%;
+}
+
+.input-form, .output-form, .input-notes {
+    /* padding: 20px; */
+}
+
+.input-form {
+    float:left;
+    min-width: 680px;
+    width: 66%;
+}
+
+.input-notes {
+    float: left;
+    width: 30%;
+    margin-left: 10px;
+    min-width: 200px;
+}
+
+.input-form textarea {
+    width:100%;
+}
+
+.section-divider {
+    clear: both;
+}
+
+textarea#output-field {
+    width: 95%;
+    min-width: 680px;
+    border: 1px solid;
+    min-height: 40px;
+}
+
+.col1 {
+    width: 190px;
+}
+
+.col2 {
+    position: absolute;
+    left: 150px;
+    width: 140px;
+}
+
+.col3 {
+    position: absolute;
+    left: 300px;
+    width: 140px;
+}
+
+.col4 {
+    position: absolute;
+    left: 450px;
+    width: 140px;
+}
+
+/* formatting */
+
+input[type=number] {
+    text-align: center;
+}
+
+/* typography */
+
+.instructions, #notification {
+    font-size: 80%;
+}
+
+.input-form textarea {
+    font-size: 60%;
+    font-family: consolas, monospace;
+}
+
+.placeholder {
+    color: #BBB;
+}
+
+/* tables */
+
+.tableform {
+    width: 100%;
+}
+
+.tableform td {
+    vertical-align: top;
+}
+
+.tableform textarea {
+    width: 100%;
+}
+
+.tableform .col1-2 {
+    width: 60%;
+}
+.tableform .col2-2 {
+    width: 30%;
+}
+
+.tableform .col1-3, .tableform .col2-3, .tableform .col3-3 {
+    width: 33%;
+}
+
+#notification, .tableform .col2-2, .tableform .col2-3, .tableform .col3-3 {
+    padding-left: 20px;
+}
+
+.outputform {
+    padding-top: 0;
+}
+
+label:hover, label:active, input:hover+label, input:active+label {
+    text-decoration: underline;
+}

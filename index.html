@@ -16,33 +16,33 @@
 	<h3>Group size</h3>
 	<span class="col1"><label title="Ideal size of a group">
 	Ideal: 
-	<input id="input-group-ideal" name="group-ideal" type="number" size=6 
+	<input id="group-ideal" name="group-ideal" type="number" size=6 
 	    value="4" min="0" max="100" required></label></span>
 	<span class="col2"><label title="Minimally acceptable size of a group">
 	Minimum: 
-	<input id="input-group-min" name="group-min" type="number" size=6 
+	<input id="group-min" name="group-min" type="number" size=6 
 	    value="3" min="0" max="100" required></label></span>
 	<span class="col3"><label title="Maximum size of a group">
 	Maximum: 
-	<input id="input-group-max" name="group-max" type="number" size=6 
+	<input id="group-max" name="group-max" type="number" size=6 
 	    value="5" min="0" max="100" required></label></span>
 
 	<h3>Weights</h3>
 	<span class="col1"><label 
 	title="Relative weight to apply to matching scheduling criteria">Scheduling:
-	<input id="input-weight-sched" name="weight-sched" type="number" size=6 
+	<input id="weight-sched" name="weight-sched" type="number" size=6 
 	    value="5" min="0" max="100" required></label></span>
 	<span class="col2"><label 
 	title="Relative weight to apply to matching topics criteria">Topics:
-	<input id="input-weight-topic" name="weight-topic" type="number" size=6 
+	<input id="weight-topic" name="weight-topic" type="number" size=6 
 	    value="3" min="0" max="100" required></label></span>
 	<span class="col3"><label 
 	title="Relative weight to apply to diversity fields criteria">Diversity:
-	<input id="input-weight-div" name="weight-div" type="number" size=6 
+	<input id="weight-div" name="weight-div" type="number" size=6 
 	    value="2" min="0" max="100" required></label></span>
 	<span class="col4"><label 
 	title="Relative weight to apply to group sizing criteria">Group size:
-	<input id="input-weight-size" name="weight-size" type="number" size=6 
+	<input id="weight-size" name="weight-size" type="number" size=6 
 	    value="5" min="0" max="100" required></label></span>
 
 
@@ -74,7 +74,7 @@
     </div>
     <div class="section-divider"></div>
 
-    <br><input type="button" value="Create Groups" onclick="submit()">
+    <br><input id="submit" type="button" value="Create Groups">
 
     <div id="notification">
     </div>

@@ -12,7 +12,7 @@ APIURL = "https://maps.googleapis.com/maps/api/place";
 var idObj = {};
 
 // input variables
-var partData = [];
+var partStrings = [];
 var groupSize = {
     "ideal" : 4,
     "min" : 3,
@@ -22,27 +22,36 @@ var weights = {
     "sched" : 5,
     "topic" : 3,
     "div" : 2,
-    "size: 5
+    "size" : 5
 }
 
 // collection variables
-var locationDataList = [];
-var placesDataObj = {};
-var detailDataList = [];
-var howManyReviews = 1;
-var reviewWords = 25;
+var header1 = [];
+var header2 = [];
+var partData = [];
+var partList = [];
+
+// var locationDataList = [];
+// var placesDataObj = {};
+// var detailDataList = [];
+// var howManyReviews = 1;
+// var reviewWords = 25;
+
+// reference
 
 // DOM fields
 domEl = {
-    "partDataId" : "#participant-data",
-    "groupIdealId" : "input#input-group-ideal",
-    "groupMinId" : "input#input-group-min",
-    "groupMaxId" : "input#input-group-max",
-    "weightSchedId" : "input#weight-sched-max",
-    "weightTopicId" : "input#weight-topic-max",
-    "weightDivId" : "input#weight-div-max",
+    "part-data" : "#participant-data",
+    "group-ideal" : "input#group-ideal",
+    "group-min" : "input#group-min",
+    "group-max" : "input#group-max",
+    "weight-sched" : "input#weight-sched",
+    "weight-topic" : "input#weight-topic",
+    "weight-div" : "input#weight-div",
+    "weight-size" : "input#weight-size",
+    "submit" : "#submit",
     "notification" : "#notification",
-    "outputFormId" : ".outputform #output-field"
+    "outputForm" : ".outputform #output-field"
 }
 
 // Placeholders
@@ -59,13 +68,6 @@ Name6\t0\t1\t1\t3\t2\t1\t5\t5\t3
 
 // global flags
 var error_flag = false;
-
-// map constants
-// arbitrary coordinates (geographic center of contiguous us)
-defaultLat = 39.828593;
-defaultLng = -98.579469;
-defaultRad = 2500; // or 2.5km
-var placesAPI = {};
 
 function cleanString(str) {
     // remove punctuation
@@ -111,7 +113,7 @@ function outputHeader() {
                 headerLine = headerLine + '\t' + toTitleCase(fieldList[i]);
         }
     }
-    $(domEl["outputFormId"]).append(headerLine+"\n");  
+    $(domEl["outputForm"]).append(headerLine+"\n");  
 }
 
 // output one result
@@ -126,8 +128,8 @@ function outputOneResult(detailObj) {
         }
     }
     // push record line to display list
-    $(domEl["outputFormId"]).append(recordLine+"\n");
-    $(domEl["outputFormId"]).height( $(domEl["outputFormId"])[0].scrollHeight );
+    $(domEl["outputForm"]).append(recordLine+"\n");
+    $(domEl["outputForm"]).height( $(domEl["outputForm"])[0].scrollHeight );
 }
 
 // output results to webpage
@@ -140,60 +142,139 @@ function outputresults() {
 }
 
 //
+// parse data
+//
+
+function parseHeader1 (header) {
+	// split fields on tab and store
+	header1 = header.split('\t');
+}
+
+function parseHeader2(header) {
+	// split fields on tab
+	header2 = header.split('\t');
+}
+
+function parsePartStrings(partRaw) {
+	for (var i = 0; i < partRaw.length; i++) {
+	    var thisPart = partRaw[i].split('\t');
+	    partData[i] = thisPart;
+	    var name = thisPart[0];
+	    newPartObj = {
+	    	'name' : name,
+	    	'num' : i,
+	    	'data' : thisPart.slice(1)
+	    }
+	    partList.push(newPartObj);
+	}
+}
+
+function parseRawData () {
+	// parse header rows
+	parseHeader1(partStrings[0]);
+	parseHeader2(partStrings[1]);
+	var partRaw = partStrings.slice(2);
+	if (partRaw) {
+		parsePartStrings(partRaw);
+	}
+}
+
+//
 // input functions
 //
 
 // get inputs from fields (upon submit)
 function getInputs() {
-    partData = $(domEl["partDataId"]).val().split('\n');
-    groupSize["ideal"] = parseInt($(domEl["groupIdealId"]).val());
-    groupSize["min"] = parseInt($(domEl["groupMinId"]).val());
-    groupSize["max"] = parseInt($(domEl["groupMaxId"]).val());
-    weights["sched"] = parseInt($(domEl["weightSchedId"]).val());
-    weights["topic"] = parseInt($(domEl["weightTopicId"]).val());
-    weights["div"] = parseInt($(domEl["weightDivId"]).val());
+    partStrings = $(domEl["part-data"]).val().split('\n');
+    groupSize["ideal"] = parseInt($(domEl["group-ideal"]).val());
+    groupSize["min"] = parseInt($(domEl["group-min"]).val());
+    groupSize["max"] = parseInt($(domEl["group-max"]).val());
+    weights["sched"] = parseInt($(domEl["weight-sched"]).val());
+    weights["topic"] = parseInt($(domEl["weight-topic"]).val());
+    weights["div"] = parseInt($(domEl["weight-div"]).val());
+    weights["size"] = parseInt($(domEl["weight-size"]).val());
 }
 
 // store inputs in local storage
 function storeInputs() {
-    localStorage.setItem("partData", JSON.stringify(partData));
+    localStorage.setItem("partStrings", JSON.stringify(partStrings));
     localStorage.setItem("groupSize", JSON.stringify(groupSize));
     localStorage.setItem("weights", JSON.stringify(weights));
 }
 
-// upon load, get locally stored values
+//
+// main bidness
+//
+
+// upon load
 $( document ).ready(function() {
-    if (localStorage.getItem("partData") !== null) {
-        $(domEl["partDataId"]).removeClass("placeholder");
-        $(domEl["partDataId"]).html(JSON.parse(localStorage.getItem("partData")).join('\n'));
-        $(domEl["groupIdealId"]).html(JSON.parse(localStorage.getItem("groupIdeal")));
-        $(domEl["groupMinId"]).html(JSON.parse(localStorage.getItem("groupMin")));
-        $(domEl["groupMaxId"]).html(JSON.parse(localStorage.getItem("groupMax")));
-        $(domEl["weightSchedId"]).html(JSON.parse(localStorage.getItem("weightSched")));
-        $(domEl["weightTopicId"]).html(JSON.parse(localStorage.getItem("weightTopic")));
-        $(domEl["weightDivId"]).html(JSON.parse(localStorage.getItem("weightDiv")));
+    // if local storage
+    if (localStorage.getItem("partStrings") !== null) {
+        // get locally stored values
+        var mypartStrings = JSON.parse(localStorage.getItem("partStrings")).join('\n');
+        if (mypartStrings) {
+	        // pre-load form with stored values
+	        $(domEl["part-data"]).html(mypartStrings);
+	        $(domEl["part-data"]).removeClass("placeholder");
+	    } else {
+	        // load placeholder text
+			$(domEl["part-data"]).html(participantPlaceholder);
+		    $(domEl["part-data"]).addClass("placeholder");
+	    }
+    } else {
+        // load placeholder text
+		$(domEl["part-data"]).html(participantPlaceholder);
+	    $(domEl["part-data"]).addClass("placeholder");
     }
-    else {
-        //TODO: Deal with placeholder text
-	$(domEl["partDataId"]).html(participantPlaceholder);
-	//TODO: create event that removes placeholder and removes placeholder class
-	//  when focus is on textarea
+    // if local storage
+    if (localStorage.getItem("groupSize") !== null) {
+        // get locally stored values
+        var myGroupSize = JSON.parse(localStorage.getItem("groupSize"));
+        // pre-load form with stored values
+        for (var key in groupSize) {
+        	if (! myGroupSize[key]) {
+        		value = groupSize[key];
+        	} else {
+        		value = myGroupSize[key];
+        	}
+	        $(domEl["group-" + key]).val(value);
+	    }
     }
-    $(domEl["partDataId"]).focusout(function(){
-        if ($(domEl["partDataId"]).val() == '' &&
-	   (typeof partData === 'undefined' || partData == '')) {
-	    $(domEl["partDataId"]).val(participantPlaceholder);
-	    $(domEl["partDataId"]).addClass("placeholder");
-	}
-    });
-    $(domEl["partDataId"]).focus(function(){
-	if ($(domEl["partDataId"]).hasClass("placeholder") &&
-	    (typeof partData === 'undefined' || partData == '')) {
-	    $(domEl["partDataId"]).val("");
-	}
-	$(domEl["partDataId"]).removeClass("placeholder");
-    });
-});
+    // if local storage
+    if (localStorage.getItem("weights") !== null) {
+        // get locally stored values
+        var myWeights = JSON.parse(localStorage.getItem("weights"));
+        // pre-load form with stored values
+        for (var key in weights) {
+        	if (! myWeights[key]) {
+        		value = weights[key];
+        	} else {
+        		value = myWeights[key];
+        	}
+	        $(domEl["weight-" + key]).val(value);
+	    }
+    }
+	// create event that removes placeholder and removes placeholder class
+	// 		when focus is on textarea
+    // set event handlers to simulate placeholder text
+    $(domEl["part-data"]).focusout(function(){
+        if ($(domEl["part-data"]).val() == '' &&
+	  		(typeof partStrings === 'undefined' || partStrings.length == 0)) {
+		    $(domEl["part-data"]).val(participantPlaceholder);
+		    $(domEl["part-data"]).addClass("placeholder");
+		}
+    }); /* focusout */
+    $(domEl["part-data"]).focus(function(){
+		if ($(domEl["part-data"]).hasClass("placeholder") &&
+		    (typeof partStrings === 'undefined' || partStrings.length == 0)) {
+			    $(domEl["part-data"]).val("");
+		}
+		$(domEl["part-data"]).removeClass("placeholder");
+    }); /* focus */
+    $(domEl["submit"]).click(function(){
+    	submit();
+    }); /* click */
+}); /* onload */
 
 //
 // Main Bidness
@@ -202,16 +283,17 @@ $( document ).ready(function() {
 function submit() {
     // clear globals
     error_flag = false;
-    partData = [];
+    partStrings = [];
     fieldList = [];
     locationDataList = [];
     placesDataObj = {};
     detailDataList = [];
     $(domEl["notification"]).html("");
-    $(domEl["outputFormId"]).html("");
+    $(domEl["outputForm"]).html("");
     var dfrd = $.Deferred();
     getInputs();
     storeInputs();
-    outputHeader();
+    parseRawData();
+    // outputHeader();
 }
 

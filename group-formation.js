@@ -12,7 +12,7 @@ APIURL = "https://maps.googleapis.com/maps/api/place";
 var idObj = {};
 
 // input variables
-var partStrings = [];
+var dataStrings = [];
 var groupSize = {
     "ideal" : 4,
     "min" : 3,
@@ -28,8 +28,13 @@ var weights = {
 // collection variables
 var header1 = [];
 var header2 = [];
+var dataStrings = [];
+var dataArray = [];
 var partData = [];
 var partList = [];
+var valueList = [];
+
+fieldTypes = ['S', 'T', 'D'];
 
 // var locationDataList = [];
 // var placesDataObj = {};
@@ -142,26 +147,27 @@ function outputresults() {
 }
 
 //
+// statistical functions
+//
+
+// calculate mean, min, 
+
+//
 // parse data
 //
 
-function parseHeader1 (header) {
-	// split fields on tab and store
-	header1 = header.split('\t');
+function createDataArray(dataStrings) {
+	for (var i = 0; i < dataStrings.length; i++) {
+		dataArray[i] = dataStrings[i].split('\t');
+	}
 }
 
-function parseHeader2(header) {
-	// split fields on tab
-	header2 = header.split('\t');
-}
-
-function parsePartStrings(partRaw) {
-	for (var i = 0; i < partRaw.length; i++) {
-	    var thisPart = partRaw[i].split('\t');
-	    partData[i] = thisPart;
-	    var name = thisPart[0];
+// parse raw participant strings (rows)
+function createPartObjs(partArray) {
+	for (var i = 0; i < partArray.length; i++) {
+	    var thisPart = partArray[i];
 	    newPartObj = {
-	    	'name' : name,
+	    	'name' : thisPart[0],
 	    	'num' : i,
 	    	'data' : thisPart.slice(1)
 	    }
@@ -169,14 +175,41 @@ function parsePartStrings(partRaw) {
 	}
 }
 
-function parseRawData () {
-	// parse header rows
-	parseHeader1(partStrings[0]);
-	parseHeader2(partStrings[1]);
-	var partRaw = partStrings.slice(2);
-	if (partRaw) {
-		parsePartStrings(partRaw);
+// parse raw values data (columns)
+function createValueObjs(dataArray) {
+	// we iterate by column (using length of column 1)
+	for (var col = 1; col < dataArray[1].length; col++) {
+		// we only process the column if it is marked with a fieldtype
+		if (fieldTypes.includes(dataArray[1][col].toUpperCase())) {
+			var rawdata = [];
+			for (var row = 2; row < dataArray.length; row++) {
+				rawdata.push(dataArray[row][col]);
+			}
+			var newValueObj = {
+				'fieldType' : dataArray[1][col],
+				'fieldLabel' : dataArray[0][col],
+				'rawdata' : rawdata
+			}
+			console.log(newValueObj);
+			valueList.push(newValueObj);
+		}
+
 	}
+}
+
+function analyzeValues(valueList) {
+	// iterate through values
+
+		// find min, max
+
+		// what else?
+}
+
+function parseRawData () {
+	createDataArray(dataStrings);
+	createPartObjs(dataArray.slice(2));
+	createValueObjs(dataArray);
+	analyeValues(valueList);
 }
 
 //
@@ -185,7 +218,7 @@ function parseRawData () {
 
 // get inputs from fields (upon submit)
 function getInputs() {
-    partStrings = $(domEl["part-data"]).val().split('\n');
+    dataStrings = $(domEl["part-data"]).val().split('\n');
     groupSize["ideal"] = parseInt($(domEl["group-ideal"]).val());
     groupSize["min"] = parseInt($(domEl["group-min"]).val());
     groupSize["max"] = parseInt($(domEl["group-max"]).val());
@@ -197,7 +230,7 @@ function getInputs() {
 
 // store inputs in local storage
 function storeInputs() {
-    localStorage.setItem("partStrings", JSON.stringify(partStrings));
+    localStorage.setItem("dataStrings", JSON.stringify(dataStrings));
     localStorage.setItem("groupSize", JSON.stringify(groupSize));
     localStorage.setItem("weights", JSON.stringify(weights));
 }
@@ -209,12 +242,12 @@ function storeInputs() {
 // upon load
 $( document ).ready(function() {
     // if local storage
-    if (localStorage.getItem("partStrings") !== null) {
+    if (localStorage.getItem("dataStrings") !== null) {
         // get locally stored values
-        var mypartStrings = JSON.parse(localStorage.getItem("partStrings")).join('\n');
-        if (mypartStrings) {
+        var mydataStrings = JSON.parse(localStorage.getItem("dataStrings")).join('\n');
+        if (mydataStrings) {
 	        // pre-load form with stored values
-	        $(domEl["part-data"]).html(mypartStrings);
+	        $(domEl["part-data"]).html(mydataStrings);
 	        $(domEl["part-data"]).removeClass("placeholder");
 	    } else {
 	        // load placeholder text
@@ -259,14 +292,14 @@ $( document ).ready(function() {
     // set event handlers to simulate placeholder text
     $(domEl["part-data"]).focusout(function(){
         if ($(domEl["part-data"]).val() == '' &&
-	  		(typeof partStrings === 'undefined' || partStrings.length == 0)) {
+	  		(typeof dataStrings === 'undefined' || dataStrings.length == 0)) {
 		    $(domEl["part-data"]).val(participantPlaceholder);
 		    $(domEl["part-data"]).addClass("placeholder");
 		}
     }); /* focusout */
     $(domEl["part-data"]).focus(function(){
 		if ($(domEl["part-data"]).hasClass("placeholder") &&
-		    (typeof partStrings === 'undefined' || partStrings.length == 0)) {
+		    (typeof dataStrings === 'undefined' || dataStrings.length == 0)) {
 			    $(domEl["part-data"]).val("");
 		}
 		$(domEl["part-data"]).removeClass("placeholder");
@@ -283,7 +316,7 @@ $( document ).ready(function() {
 function submit() {
     // clear globals
     error_flag = false;
-    partStrings = [];
+    dataStrings = [];
     fieldList = [];
     locationDataList = [];
     placesDataObj = {};

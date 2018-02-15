@@ -157,13 +157,16 @@ function outputresults() {
 //
 
 function createDataArray(dataStrings) {
+	var dataArray = [];
 	for (var i = 0; i < dataStrings.length; i++) {
 		dataArray[i] = dataStrings[i].split('\t');
 	}
+	return dataArray;
 }
 
 // parse raw participant strings (rows)
 function createPartObjs(partArray) {
+	var partList = [];
 	for (var i = 0; i < partArray.length; i++) {
 	    var thisPart = partArray[i];
 	    newPartObj = {
@@ -173,11 +176,13 @@ function createPartObjs(partArray) {
 	    }
 	    partList.push(newPartObj);
 	}
+	return partList;
 }
 
 // parse raw values data (columns)
 function createValueObjs(dataArray) {
-	// we iterate by column (using length of column 1)
+	var valueList = [];
+	// we iterate by column (using length of column 1 minus name column)
 	for (var col = 1; col < dataArray[1].length; col++) {
 		// we only process the column if it is marked with a fieldtype
 		if (fieldTypes.includes(dataArray[1][col].toUpperCase())) {
@@ -190,26 +195,72 @@ function createValueObjs(dataArray) {
 				'fieldLabel' : dataArray[0][col],
 				'rawdata' : rawdata
 			}
-			console.log(newValueObj);
 			valueList.push(newValueObj);
 		}
 
 	}
+	return valueList;
 }
 
 function analyzeValues(valueList) {
-	// iterate through values
+	// we iterate by column (using length of column 1 minus )
+	for (var col = 0; col < valueList.length; col++) {
+		var min = null, max = null, total = 0.0;
+		for (row = 0; row < valueList[col].rawdata.length; row++) {
+			thisVal = parseFloat(valueList[col].rawdata[row]);
+			if (isNaN(thisVal)) {
+				thisVal = 0;	
+			}
+			// calculate total for mean
+			total = total + thisVal;
+			// calc min
+			if (min === null ||
+				thisVal < min) {
+				min = thisVal;
+			}
+			// calc max
+			if (max === null ||
+				thisVal > max) {
+				max = thisVal;
+			}
+		}
+		valueList[col].min = min;
+		valueList[col].max = max;
+		valueList[col].total = total;
+		valueList[col].mean = total / valueList[col].rawdata.length;
+    }
+	return valueList;
+}
 
-		// find min, max
-
-		// what else?
+function normalizeValues(valueList) {
+	// we iterate by column (using length of column 1 minus )
+	for (var col = 0; col < valueList.length; col++) {
+		var min = valueList[col].min;
+		var max = valueList[col].max;
+		var normList = [];
+		for (row = 0; row < valueList[col].rawdata.length; row++) {
+			thisVal = parseFloat(valueList[col].rawdata[row]);
+			if (isNaN(thisVal)) {
+				thisVal = 0;	
+			}
+			// calculate normalized value
+			normalized = (thisVal - min) / (max - min)
+			if (isNaN(normalized)) {
+				normalized = 0;
+			}
+			normList.push(normalized);
+		}
+		valueList[col].normList = normList;
+    }
+	return valueList;
 }
 
 function parseRawData () {
-	createDataArray(dataStrings);
-	createPartObjs(dataArray.slice(2));
-	createValueObjs(dataArray);
-	analyeValues(valueList);
+	dataArray = createDataArray(dataStrings);
+	partList = createPartObjs(dataArray.slice(2));
+	valueList = createValueObjs(dataArray);
+	valueList = analyzeValues(valueList);
+	valueList = normalizeValues(valueList);
 }
 
 //

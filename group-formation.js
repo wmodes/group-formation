@@ -26,13 +26,15 @@ var weights = {
 }
 
 // collection variables
-var header1 = [];
-var header2 = [];
+var parts = 0;
+var crits = 0;
 var dataStrings = [];
+var headers = [];
+var types = [];
 var dataArray = [];
 var partData = [];
 var partList = [];
-var valueList = [];
+var critList = [];
 
 fieldTypes = ['S', 'T', 'D'];
 
@@ -156,6 +158,13 @@ function outputresults() {
 // parse data
 //
 
+// stores the two headers
+function saveHeaders(dataStrings) {
+	headers = dataStrings[0].split('\t');
+	types = dataStrings[1].split('\t');
+}
+
+// takes an array of strings and returns a 2-dim array
 function createDataArray(dataStrings) {
 	var dataArray = [];
 	for (var i = 0; i < dataStrings.length; i++) {
@@ -164,50 +173,35 @@ function createDataArray(dataStrings) {
 	return dataArray;
 }
 
-// parse raw participant strings (rows)
-function createPartObjs(partArray) {
-	var partList = [];
-	for (var i = 0; i < partArray.length; i++) {
-	    var thisPart = partArray[i];
-	    newPartObj = {
-	    	'name' : thisPart[0],
-	    	'num' : i,
-	    	'data' : thisPart.slice(1)
-	    }
-	    partList.push(newPartObj);
-	}
-	return partList;
-}
-
-// parse raw values data (columns)
+// parse raw crits data (columns)
 function createValueObjs(dataArray) {
-	var valueList = [];
+	var critList = [];
 	// we iterate by column (using length of column 1 minus name column)
-	for (var col = 1; col < dataArray[1].length; col++) {
+	for (var col = 1; col < types.length; col++) {
 		// we only process the column if it is marked with a fieldtype
-		if (fieldTypes.includes(dataArray[1][col].toUpperCase())) {
+		if (fieldTypes.includes(types[col].toUpperCase())) {
 			var rawdata = [];
-			for (var row = 2; row < dataArray.length; row++) {
+			for (var row = 0; row < dataArray.length; row++) {
 				rawdata.push(dataArray[row][col]);
 			}
 			var newValueObj = {
-				'fieldType' : dataArray[1][col],
-				'fieldLabel' : dataArray[0][col],
+				'fieldType' : types[col],
+				'fieldLabel' : headers[col],
 				'rawdata' : rawdata
 			}
-			valueList.push(newValueObj);
+			critList.push(newValueObj);
 		}
 
 	}
-	return valueList;
+	return critList;
 }
 
-function analyzeValues(valueList) {
+function analyzeValues(critList) {
 	// we iterate by column (using length of column 1 minus )
-	for (var col = 0; col < valueList.length; col++) {
+	for (var col = 0; col < critList.length; col++) {
 		var min = null, max = null, total = 0.0;
-		for (row = 0; row < valueList[col].rawdata.length; row++) {
-			thisVal = parseFloat(valueList[col].rawdata[row]);
+		for (row = 0; row < critList[col].rawdata.length; row++) {
+			thisVal = parseFloat(critList[col].rawdata[row]);
 			if (isNaN(thisVal)) {
 				thisVal = 0;	
 			}
@@ -224,44 +218,81 @@ function analyzeValues(valueList) {
 				max = thisVal;
 			}
 		}
-		valueList[col].min = min;
-		valueList[col].max = max;
-		valueList[col].total = total;
-		valueList[col].mean = total / valueList[col].rawdata.length;
+		critList[col].min = min;
+		critList[col].max = max;
+		critList[col].total = total;
+		critList[col].mean = total / critList[col].rawdata.length;
     }
-	return valueList;
+	return critList;
 }
 
-function normalizeValues(valueList) {
+//TODO: Figure out why the last bunch of normalized values are undefined
+function normalizeValues(critList) {
 	// we iterate by column (using length of column 1 minus )
-	for (var col = 0; col < valueList.length; col++) {
-		var min = valueList[col].min;
-		var max = valueList[col].max;
+	for (var col = 0; col < crits; col++) {
+		var min = critList[col].min;
+		var max = critList[col].max;
 		var normList = [];
-		for (row = 0; row < valueList[col].rawdata.length; row++) {
-			thisVal = parseFloat(valueList[col].rawdata[row]);
+		for (row = 0; row < parts; row++) {
+			thisVal = parseFloat(critList[col].rawdata[row]);
 			if (isNaN(thisVal)) {
 				thisVal = 0;	
 			}
-			// calculate normalized value
+			// calculate normalized crit
 			normalized = (thisVal - min) / (max - min)
 			if (isNaN(normalized)) {
 				normalized = 0;
 			}
 			normList.push(normalized);
 		}
-		valueList[col].normList = normList;
+		critList[col].normList = normList;
     }
-	return valueList;
+	return critList;
+}
+
+// parse participant strings (rows)
+function createPartObjs(dataArray, critList) {
+	var partList = [];
+	for (var row = 0; row < parts; row++) {
+	    var thisPart = dataArray[row];
+	    newPartObj = {
+	    	'name' : thisPart[0],
+	    	'num' : row,
+	    	'rawdata' : thisPart.slice(1),
+	    	'normdata' : [] 
+	    }
+	    for (var col = 0; col < crits; col++) {
+	    	newPartObj.normdata.push(critList[col].normList[row]);
+	    }
+	    partList.push(newPartObj);
+	    console.log("newPartObj:",newPartObj);
+	}
+	return partList;
 }
 
 function parseRawData () {
-	dataArray = createDataArray(dataStrings);
-	partList = createPartObjs(dataArray.slice(2));
-	valueList = createValueObjs(dataArray);
-	valueList = analyzeValues(valueList);
-	valueList = normalizeValues(valueList);
+	saveHeaders(dataStrings);
+	dataArray = createDataArray(dataStrings.slice(2));
+	parts = dataArray.length;
+	critList = createValueObjs(dataArray);
+	crits = critList.length;
+	critList = analyzeValues(critList);
+	critList = normalizeValues(critList);
+	partList = createPartObjs(dataArray, critList);
 }
+
+
+//
+// Scoring
+//
+
+function scoreGroup(groupArray) {
+	// iterate over all the normalized values
+	// Scheduling and topics:
+	// 		f(array) = average(array)-(stdev(array)/2)
+
+}
+
 
 //
 // input functions
